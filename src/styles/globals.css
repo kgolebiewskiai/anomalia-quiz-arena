@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-anomaly-bg: #20093A;
+  --color-anomaly-primary: #AA93FF;
+  --color-anomaly-lavender: #E3D2FF;
+  --color-anomaly-gold: #D9D3A7;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #20093A;
+  color: #E3D2FF;
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
