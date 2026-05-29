@@ -1,10 +1,50 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { HomePage } from '../features/home/HomePage'
+import { DevCardsPage } from '../features/dev/DevCardsPage'
+import { CreateRoomPage } from '../features/lobby/CreateRoomPage'
+import { JoinRoomPage } from '../features/lobby/JoinRoomPage'
+import { LobbyPage } from '../features/lobby/LobbyPage'
+import { CategoryVotePage } from '../features/categoryDraft/CategoryVotePage'
+import { ProfileDraftPage } from '../features/profileDraft/ProfileDraftPage'
+import { QuestionPage } from '../features/question/QuestionPage'
+import { ScoreboardPage } from '../features/scoreboard/ScoreboardPage'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <HomePage />,
+  },
+  {
+    path: '/create-room',
+    element: <CreateRoomPage />,
+  },
+  {
+    path: '/join',
+    element: <JoinRoomPage />,
+  },
+  {
+    path: '/lobby/:code',
+    element: <LobbyPage />,
+  },
+  {
+    path: '/category-vote/:code',
+    element: <CategoryVotePage />,
+  },
+  {
+    path: '/profile-draft/:code',
+    element: <ProfileDraftPage />,
+  },
+  {
+    path: '/question/:code',
+    element: <QuestionPage />,
+  },
+  {
+    path: '/scoreboard/:code',
+    element: <ScoreboardPage />,
+  },
+  {
+    path: '/dev/cards',
+    element: <DevCardsPage />,
   },
   {
     path: '*',
