@@ -1,0 +1,5 @@
+name = "anomalia-quiz-arena"
+pages_build_output_dir = "dist"
+
+[assets]
+not_found_handling = "single-page-application"
