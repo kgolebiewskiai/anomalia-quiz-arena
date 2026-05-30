@@ -176,6 +176,30 @@ export interface AnswerBreakdown {
   total: number
 }
 
+export interface Rating {
+  id: string
+  user_id: string
+  rating: number
+  games_played: number
+  wins: number
+  updated_at: string
+}
+
+export type MatchmakingMode = 'duel' | 'arena'
+export type MatchmakingStatus = 'searching' | 'matched' | 'cancelled' | 'timeout'
+
+export interface MatchmakingEntry {
+  id: string
+  user_id: string
+  display_name: string
+  rating: number
+  mode: MatchmakingMode
+  joined_at: string
+  status: MatchmakingStatus
+  matched_room_id: string | null
+  matched_room_code: string | null
+}
+
 export interface Answer {
   id: string
   room_id: string

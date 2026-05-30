@@ -10,6 +10,7 @@ import { QuestionPage } from '../features/question/QuestionPage'
 import { ModificationDraftPage } from '../features/modificationDraft/ModificationDraftPage'
 import { ScoreboardPage } from '../features/scoreboard/ScoreboardPage'
 import { AnomalyRevealPage } from '../features/anomalyReveal/AnomalyRevealPage'
+import { MatchmakingPage } from '../features/matchmaking/MatchmakingPage'
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +52,10 @@ export const router = createBrowserRouter([
   {
     path: '/anomaly-reveal/:code',
     element: <AnomalyRevealPage />,
+  },
+  {
+    path: '/matchmaking',
+    element: <MatchmakingPage />,
   },
   {
     path: '/dev/cards',

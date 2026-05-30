@@ -10,6 +10,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['logo.svg'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+      },
       manifest: {
         name: 'ANOMALIA: Quiz Arena',
         short_name: 'ANOMALIA',
@@ -17,14 +20,23 @@ export default defineConfig({
         theme_color: '#20093A',
         background_color: '#20093A',
         display: 'standalone',
+        orientation: 'portrait',
         start_url: '/',
+        scope: '/',
         lang: 'pl',
+        categories: ['games', 'entertainment'],
         icons: [
           {
             src: 'logo.svg',
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any',
+          },
+          {
+            src: 'logo.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'maskable',
           },
         ],
       },

@@ -4,7 +4,7 @@ import { AppLayout } from '../../components/layout/AppLayout'
 import { supabase } from '../../services/supabaseClient'
 import { useAuthStore } from '../../store/authStore'
 import { cn } from '../../lib/cn'
-import type { RoomPlayer } from '../../domain/types'
+import type { Room, RoomPlayer, Rating } from '../../domain/types'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
@@ -13,7 +13,9 @@ export function ScoreboardPage() {
   const navigate = useNavigate()
   const { session } = useAuthStore()
 
+  const [room, setRoom] = useState<Room | null>(null)
   const [players, setPlayers] = useState<RoomPlayer[]>([])
+  const [ratings, setRatings] = useState<Map<string, Rating>>(new Map())
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -26,15 +28,43 @@ export function ScoreboardPage() {
         .eq('code', code!.toUpperCase())
         .single()
 
-      if (roomData) {
-        const { data: playersData } = await supabase
-          .from('room_players')
-          .select('*')
-          .eq('room_id', roomData.id)
-          .is('left_at', null)
-          .order('score', { ascending: false })
+      if (!roomData) {
+        setLoading(false)
+        return
+      }
 
-        if (playersData) setPlayers(playersData as RoomPlayer[])
+      const loadedRoom = roomData as Room
+      setRoom(loadedRoom)
+
+      const { data: playersData } = await supabase
+        .from('room_players')
+        .select('*')
+        .eq('room_id', loadedRoom.id)
+        .is('left_at', null)
+        .order('score', { ascending: false })
+
+      if (playersData) setPlayers(playersData as RoomPlayer[])
+
+      if (loadedRoom.mode === 'ranked') {
+        // Trigger rating update (idempotent — first caller does the work)
+        await supabase.rpc('update_ratings_after_game', { p_room_id: loadedRoom.id })
+
+        // Fetch current ratings for all players
+        const userIds = (playersData ?? []).map((p) => p.user_id)
+        if (userIds.length > 0) {
+          const { data: ratingsData } = await supabase
+            .from('ratings')
+            .select('*')
+            .in('user_id', userIds)
+
+          if (ratingsData) {
+            const map = new Map<string, Rating>()
+            for (const r of ratingsData as Rating[]) {
+              map.set(r.user_id, r)
+            }
+            setRatings(map)
+          }
+        }
       }
 
       setLoading(false)
@@ -55,6 +85,7 @@ export function ScoreboardPage() {
 
   const winner = players[0]
   const myUserId = session?.user.id
+  const isRanked = room?.mode === 'ranked'
 
   return (
     <AppLayout>
@@ -62,7 +93,7 @@ export function ScoreboardPage() {
         {/* Header */}
         <div className="space-y-1 text-center">
           <p className="text-xs tracking-widest text-anomaly-gold uppercase">
-            Instytut Anomalii · Koniec Testu
+            {isRanked ? 'Ranked · ' : ''}Instytut Anomalii · Koniec Testu
           </p>
           <h1 className="text-3xl font-bold text-anomaly-primary">Wyniki Końcowe</h1>
           {winner && (
@@ -109,43 +140,51 @@ export function ScoreboardPage() {
             Pełna tabela
           </p>
           <div className="space-y-2">
-            {players.map((p, idx) => (
-              <div
-                key={p.user_id}
-                className={cn(
-                  'flex items-center justify-between rounded-2xl border px-4 py-4',
-                  p.user_id === myUserId
-                    ? 'border-anomaly-primary/50 bg-anomaly-primary/10'
-                    : 'border-white/10 bg-white/5',
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={cn(
-                    'w-6 text-center text-sm font-bold',
-                    idx === 0 ? 'text-anomaly-gold' : 'text-anomaly-lavender/40',
-                  )}>
-                    {idx < 3 ? MEDALS[idx] : `${idx + 1}.`}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-anomaly-lavender">
-                      {p.display_name}
-                      {p.user_id === myUserId && (
-                        <span className="ml-1 text-xs text-anomaly-primary">(ty)</span>
+            {players.map((p, idx) => {
+              const ratingEntry = ratings.get(p.user_id)
+              return (
+                <div
+                  key={p.user_id}
+                  className={cn(
+                    'flex items-center justify-between rounded-2xl border px-4 py-4',
+                    p.user_id === myUserId
+                      ? 'border-anomaly-primary/50 bg-anomaly-primary/10'
+                      : 'border-white/10 bg-white/5',
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={cn(
+                      'w-6 text-center text-sm font-bold',
+                      idx === 0 ? 'text-anomaly-gold' : 'text-anomaly-lavender/40',
+                    )}>
+                      {idx < 3 ? MEDALS[idx] : `${idx + 1}.`}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-anomaly-lavender">
+                        {p.display_name}
+                        {p.user_id === myUserId && (
+                          <span className="ml-1 text-xs text-anomaly-primary">(ty)</span>
+                        )}
+                      </p>
+                      {p.selected_profile_id && (
+                        <p className="text-xs text-anomaly-lavender/40 capitalize">
+                          {p.selected_profile_id}
+                        </p>
                       )}
-                    </p>
-                    {p.selected_profile_id && (
-                      <p className="text-xs text-anomaly-lavender/40 capitalize">
-                        {p.selected_profile_id}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono text-lg font-bold text-anomaly-gold">{p.score}</p>
+                    <p className="text-xs text-anomaly-lavender/40">pkt</p>
+                    {isRanked && ratingEntry && (
+                      <p className="text-xs text-anomaly-primary/70 mt-0.5">
+                        {ratingEntry.rating} <span className="text-anomaly-lavender/30">ELO</span>
                       </p>
                     )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-mono text-lg font-bold text-anomaly-gold">{p.score}</p>
-                  <p className="text-xs text-anomaly-lavender/40">pkt</p>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
