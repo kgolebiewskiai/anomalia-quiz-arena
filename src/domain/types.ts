@@ -67,6 +67,7 @@ export type RoomStatus =
   | 'question'
   | 'modification_draft'
   | 'results'
+  | 'anomaly_reveal'
   | 'finished'
 
 export interface Category {
@@ -89,6 +90,17 @@ export interface RoomProfileOption {
   user_id: string
   profile_ids: string[]
   created_at: string
+}
+
+export interface RoomModificationOption {
+  id: string
+  room_id: string
+  user_id: string
+  draft_stage: number
+  modification_ids: string[]
+  selected_modification_id: string | null
+  created_at: string
+  selected_at: string | null
 }
 
 export interface Room {

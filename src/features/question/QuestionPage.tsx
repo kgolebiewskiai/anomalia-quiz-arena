@@ -64,6 +64,8 @@ export function QuestionPage() {
     if (room.status === 'lobby') navigate(`/lobby/${code}`)
     if (room.status === 'category_vote') navigate(`/category-vote/${code}`)
     if (room.status === 'profile_draft') navigate(`/profile-draft/${code}`)
+    if (room.status === 'modification_draft') navigate(`/modification-draft/${code}`)
+    if (room.status === 'anomaly_reveal') navigate(`/anomaly-reveal/${code}`)
   }, [room?.status, code, navigate])
 
   // Auto-advance when timer hits 0

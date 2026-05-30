@@ -7,7 +7,9 @@ import { LobbyPage } from '../features/lobby/LobbyPage'
 import { CategoryVotePage } from '../features/categoryDraft/CategoryVotePage'
 import { ProfileDraftPage } from '../features/profileDraft/ProfileDraftPage'
 import { QuestionPage } from '../features/question/QuestionPage'
+import { ModificationDraftPage } from '../features/modificationDraft/ModificationDraftPage'
 import { ScoreboardPage } from '../features/scoreboard/ScoreboardPage'
+import { AnomalyRevealPage } from '../features/anomalyReveal/AnomalyRevealPage'
 
 export const router = createBrowserRouter([
   {
@@ -39,8 +41,16 @@ export const router = createBrowserRouter([
     element: <QuestionPage />,
   },
   {
+    path: '/modification-draft/:code',
+    element: <ModificationDraftPage />,
+  },
+  {
     path: '/scoreboard/:code',
     element: <ScoreboardPage />,
+  },
+  {
+    path: '/anomaly-reveal/:code',
+    element: <AnomalyRevealPage />,
   },
   {
     path: '/dev/cards',
