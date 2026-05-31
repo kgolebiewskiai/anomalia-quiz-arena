@@ -25,7 +25,7 @@ export function LobbyPage() {
 
   const isHost = room?.host_user_id === session?.user.id
   const activePlayers = players.filter((p) => p.left_at === null)
-  const canStart = isHost && activePlayers.length >= 2
+  const canStart = isHost && activePlayers.length >= 1
 
   // Initial data load
   useEffect(() => {
@@ -291,7 +291,7 @@ export function LobbyPage() {
                 ? 'Uruchamianie…'
                 : canStart
                   ? 'Rozpocznij Test'
-                  : `Czekaj na graczy (min. 2)`}
+                  : 'Czekaj na graczy…'}
             </Button>
           ) : (
             <div className="rounded-xl border border-anomaly-primary/10 px-4 py-3 text-center text-sm text-anomaly-lavender/40">

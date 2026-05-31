@@ -174,6 +174,7 @@ export interface AnswerBreakdownLine {
 export interface AnswerBreakdown {
   lines: AnswerBreakdownLine[]
   total: number
+  blocked?: boolean
 }
 
 export interface Rating {

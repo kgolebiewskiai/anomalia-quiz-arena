@@ -252,6 +252,10 @@ export function QuestionPage() {
       }
     } else if (data) {
       const breakdown = data as AnswerBreakdown
+      // blocked=true means a modification (e.g. Opóźniona Reakcja) suppressed scoring;
+      // no answer row was saved to DB — treat locally as "answered but 0 pts"
+      const isCorrectLocally = !breakdown.blocked &&
+        (breakdown.total > 0 || (breakdown.lines[0]?.value ?? 0) > 0)
       const fakeAnswer: Answer = {
         id: 'local',
         room_id: room.id,
@@ -259,7 +263,7 @@ export function QuestionPage() {
         question_index: room.current_question_index,
         question_id: roomQuestion?.question_id ?? '',
         answer: { id: optionId },
-        is_correct: breakdown.total > 0 || (breakdown.lines[0]?.value ?? 0) > 0,
+        is_correct: isCorrectLocally,
         answered_at: new Date().toISOString(),
         response_ms: 0,
         base_points: breakdown.lines[0]?.value ?? 0,
@@ -405,20 +409,29 @@ export function QuestionPage() {
           </div>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <div
-              className={cn(
-                'rounded-2xl border-2 px-6 py-4 text-center',
-                myCorrectAnswer
-                  ? 'border-green-500/40 bg-green-500/10 text-green-400'
-                  : 'border-red-500/40 bg-red-500/10 text-red-400',
-              )}
-            >
-              <p className="text-2xl font-bold mb-1">{myCorrectAnswer ? '✓' : '✗'}</p>
-              <p className="text-sm font-medium">{myCorrectAnswer ? 'Poprawna odpowiedź!' : 'Błędna odpowiedź'}</p>
-              <p className={cn('text-lg font-bold mt-1', myAnswer.total_points >= 0 ? 'text-anomaly-gold' : 'text-red-400')}>
-                {myAnswer.total_points >= 0 ? '+' : ''}{myAnswer.total_points} pkt
-              </p>
-            </div>
+            {myAnswer.breakdown.blocked ? (
+              <div className="rounded-2xl border-2 border-anomaly-lavender/30 bg-anomaly-lavender/5 px-6 py-4 text-center">
+                <p className="text-2xl font-bold mb-1 text-anomaly-lavender/60">⏸</p>
+                <p className="text-sm font-medium text-anomaly-lavender/70">Opóźniona Reakcja</p>
+                <p className="text-xs text-anomaly-lavender/50 mt-1">Modyfikacja blokuje punkty w tym pytaniu</p>
+                <p className="text-lg font-bold mt-2 text-anomaly-lavender/40">+0 pkt</p>
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  'rounded-2xl border-2 px-6 py-4 text-center',
+                  myCorrectAnswer
+                    ? 'border-green-500/40 bg-green-500/10 text-green-400'
+                    : 'border-red-500/40 bg-red-500/10 text-red-400',
+                )}
+              >
+                <p className="text-2xl font-bold mb-1">{myCorrectAnswer ? '✓' : '✗'}</p>
+                <p className="text-sm font-medium">{myCorrectAnswer ? 'Poprawna odpowiedź!' : 'Błędna odpowiedź'}</p>
+                <p className={cn('text-lg font-bold mt-1', myAnswer.total_points >= 0 ? 'text-anomaly-gold' : 'text-red-400')}>
+                  {myAnswer.total_points >= 0 ? '+' : ''}{myAnswer.total_points} pkt
+                </p>
+              </div>
+            )}
             <p className="text-xs text-anomaly-lavender/40 animate-pulse">
               Czekaj na wyniki…
             </p>

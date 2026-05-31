@@ -198,12 +198,15 @@ export function ProfileDraftPage() {
     setSubmitting(false)
   }
 
-  // Timeout fallback: force-advance to questions when timer hits 0
+  // Timeout fallback: force-advance to questions when timer hits 0.
+  // Guard against initial secondsLeft=0 before room data arrives (same pattern as AnomalyRevealPage).
   useEffect(() => {
-    if (secondsLeft === 0 && room?.id && room.status === 'profile_draft') {
-      supabase.rpc('prepare_questions', { p_room_id: room.id }).then(null, () => {})
-    }
-  }, [secondsLeft, room?.id, room?.status])
+    if (secondsLeft !== 0 || !room?.id || room.status !== 'profile_draft') return
+    if (!room.current_phase_started_at || !room.current_phase_duration_ms) return
+    const elapsed = Date.now() - new Date(room.current_phase_started_at).getTime()
+    if (elapsed < room.current_phase_duration_ms) return
+    supabase.rpc('prepare_questions', { p_room_id: room.id }).then(null, () => {})
+  }, [secondsLeft, room?.id, room?.status, room?.current_phase_started_at, room?.current_phase_duration_ms])
 
   const activePlayers = players.filter((p) => p.left_at === null)
   const selectedCount = activePlayers.filter((p) => p.selected_profile_id !== null).length

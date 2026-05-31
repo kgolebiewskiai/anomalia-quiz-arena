@@ -60,13 +60,16 @@ export function CategoryVotePage() {
     if (room.status === 'profile_draft') navigate(`/profile-draft/${code}`)
   }, [room?.status, code, navigate])
 
-  // Fire timeout RPC when countdown hits 0
+  // Fire timeout RPC when countdown hits 0.
+  // Guard against initial secondsLeft=0 before room data arrives (same pattern as AnomalyRevealPage).
   useEffect(() => {
-    if (secondsLeft === 0 && room?.status === 'category_vote' && !timerFiredRef.current) {
-      timerFiredRef.current = true
-      supabase.rpc('prepare_profile_draft', { p_room_id: room.id })
-    }
-  }, [secondsLeft, room?.status, room?.id])
+    if (secondsLeft !== 0 || room?.status !== 'category_vote' || timerFiredRef.current) return
+    if (!room.current_phase_started_at || !room.current_phase_duration_ms) return
+    const elapsed = Date.now() - new Date(room.current_phase_started_at).getTime()
+    if (elapsed < room.current_phase_duration_ms) return
+    timerFiredRef.current = true
+    supabase.rpc('prepare_profile_draft', { p_room_id: room.id })
+  }, [secondsLeft, room?.status, room?.id, room?.current_phase_started_at, room?.current_phase_duration_ms])
 
   // Initial data load
   useEffect(() => {

@@ -57,13 +57,19 @@ export function AnomalyRevealPage() {
     if (room.status === 'lobby') navigate(`/lobby/${code}`)
   }, [room?.status, code, navigate])
 
-  // Auto-advance when countdown hits 0
+  // Auto-advance when countdown hits 0.
+  // Guard: also check wall-clock elapsed time because msLeft starts at 0 before the
+  // room data arrives (lazy useState initializer runs with null args), which would
+  // fire this effect prematurely and set advancedRef.current = true — blocking the
+  // real advance when the 5 s timer actually expires.
   useEffect(() => {
-    if (msLeft === 0 && room?.id && !advancedRef.current && room.status === 'anomaly_reveal') {
-      advancedRef.current = true
-      supabase.rpc('advance_room_phase', { p_room_id: room.id }).then(null, () => {})
-    }
-  }, [msLeft, room?.id, room?.status])
+    if (msLeft !== 0 || !room?.id || advancedRef.current || room.status !== 'anomaly_reveal') return
+    if (!room.current_phase_started_at || !room.current_phase_duration_ms) return
+    const elapsed = Date.now() - new Date(room.current_phase_started_at).getTime()
+    if (elapsed < room.current_phase_duration_ms) return
+    advancedRef.current = true
+    supabase.rpc('advance_room_phase', { p_room_id: room.id }).then(null, () => {})
+  }, [msLeft, room?.id, room?.status, room?.current_phase_started_at, room?.current_phase_duration_ms])
 
   // Initial load
   useEffect(() => {

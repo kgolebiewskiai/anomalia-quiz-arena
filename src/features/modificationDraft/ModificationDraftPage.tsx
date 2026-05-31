@@ -190,17 +190,20 @@ export function ModificationDraftPage() {
     return () => { channel.unsubscribe() }
   }, [room?.id])
 
-  // Timeout fallback: force-advance when timer hits 0
+  // Timeout fallback: force-advance when timer hits 0.
+  // Guard against initial secondsLeft=0 before room data arrives (same pattern as AnomalyRevealPage).
   useEffect(() => {
-    if (secondsLeft === 0 && room?.id && room.status === 'modification_draft') {
-      supabase
-        .rpc('prepare_modification_draft', {
-          p_room_id: room.id,
-          p_draft_stage: room.current_question_index,
-        })
-        .then(null, () => {})
-    }
-  }, [secondsLeft, room?.id, room?.status, room?.current_question_index])
+    if (secondsLeft !== 0 || !room?.id || room.status !== 'modification_draft') return
+    if (!room.current_phase_started_at || !room.current_phase_duration_ms) return
+    const elapsed = Date.now() - new Date(room.current_phase_started_at).getTime()
+    if (elapsed < room.current_phase_duration_ms) return
+    supabase
+      .rpc('prepare_modification_draft', {
+        p_room_id: room.id,
+        p_draft_stage: room.current_question_index,
+      })
+      .then(null, () => {})
+  }, [secondsLeft, room?.id, room?.status, room?.current_question_index, room?.current_phase_started_at, room?.current_phase_duration_ms])
 
   async function handleSelect(modificationId: string) {
     if (!room || submitting || selectedId !== null) return

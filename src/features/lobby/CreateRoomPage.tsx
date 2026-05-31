@@ -83,14 +83,14 @@ export function CreateRoomPage() {
             </p>
             <input
               type="range"
-              min={2}
+              min={1}
               max={8}
               value={maxPlayers}
               onChange={(e) => setMaxPlayers(Number(e.target.value))}
               className="w-full accent-anomaly-primary"
             />
             <div className="flex justify-between text-xs text-anomaly-lavender/30">
-              <span>2</span>
+              <span>1 (solo)</span>
               <span>8</span>
             </div>
           </div>
