@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import { AppLayout } from '../../components/layout/AppLayout'
+import { Stagger, StaggerItem } from '../../components/motion/Stagger'
+import { CountUp } from '../../components/ui/CountUp'
 import { supabase } from '../../services/supabaseClient'
 import { useAuthStore } from '../../store/authStore'
 import { cn } from '../../lib/cn'
@@ -12,6 +15,7 @@ export function ScoreboardPage() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const { session } = useAuthStore()
+  const reduce = useReducedMotion()
 
   const [room, setRoom] = useState<Room | null>(null)
   const [players, setPlayers] = useState<RoomPlayer[]>([])
@@ -111,23 +115,28 @@ export function ScoreboardPage() {
               const p = players[rankIdx]
               if (!p) return null
               const heights = [96, 128, 72]
+              const order = [1, 0, 2].indexOf(rankIdx)
               return (
                 <div key={p.user_id} className="flex flex-col items-center gap-1">
                   <span className="text-xs font-semibold text-anomaly-lavender/60 truncate max-w-20 text-center">
                     {p.display_name}
                   </span>
-                  <span className="font-mono text-xs text-anomaly-gold">{p.score} pkt</span>
-                  <div
+                  <span className="font-mono text-xs text-anomaly-gold">
+                    <CountUp value={p.score} /> pkt
+                  </span>
+                  <motion.div
                     className={cn(
-                      'w-20 rounded-t-xl flex items-end justify-center pb-2',
+                      'w-20 rounded-t-xl flex items-end justify-center pb-2 overflow-hidden',
                       rankIdx === 0
                         ? 'bg-anomaly-gold/30 border border-anomaly-gold/40'
                         : 'bg-anomaly-primary/20 border border-anomaly-primary/30',
                     )}
-                    style={{ height: heights[rankIdx] }}
+                    initial={{ height: reduce ? heights[rankIdx] : 0 }}
+                    animate={{ height: heights[rankIdx] }}
+                    transition={{ delay: 0.15 + order * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <span className="text-2xl">{MEDALS[rankIdx] ?? ''}</span>
-                  </div>
+                  </motion.div>
                 </div>
               )
             })}
@@ -139,11 +148,11 @@ export function ScoreboardPage() {
           <p className="text-xs tracking-widest text-anomaly-lavender/40 uppercase mb-3">
             Pełna tabela
           </p>
-          <div className="space-y-2">
+          <Stagger className="space-y-2">
             {players.map((p, idx) => {
               const ratingEntry = ratings.get(p.user_id)
               return (
-                <div
+                <StaggerItem
                   key={p.user_id}
                   className={cn(
                     'flex items-center justify-between rounded-2xl border px-4 py-4',
@@ -174,7 +183,10 @@ export function ScoreboardPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-lg font-bold text-anomaly-gold">{p.score}</p>
+                    <CountUp
+                      value={p.score}
+                      className="block font-mono text-lg font-bold text-anomaly-gold"
+                    />
                     <p className="text-xs text-anomaly-lavender/40">pkt</p>
                     {isRanked && ratingEntry && (
                       <p className="text-xs text-anomaly-primary/70 mt-0.5">
@@ -182,10 +194,10 @@ export function ScoreboardPage() {
                       </p>
                     )}
                   </div>
-                </div>
+                </StaggerItem>
               )
             })}
-          </div>
+          </Stagger>
         </div>
 
         {/* Actions */}

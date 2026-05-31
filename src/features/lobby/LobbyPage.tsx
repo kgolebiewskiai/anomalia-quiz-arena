@@ -49,13 +49,13 @@ export function LobbyPage() {
 
       const room = roomData as Room
 
-      // Redirect to active phase if already started
-      if (room.status === 'category_vote') {
-        navigate(`/category-vote/${code}`)
+      // Redirect into the game shell if the match already started
+      if (room.status !== 'lobby' && room.status !== 'finished') {
+        navigate(`/play/${code}`, { replace: true })
         return
       }
-      if (room.status === 'profile_draft') {
-        navigate(`/profile-draft/${code}`)
+      if (room.status === 'finished') {
+        navigate(`/scoreboard/${code}`, { replace: true })
         return
       }
 
@@ -123,8 +123,7 @@ export function LobbyPage() {
         (payload) => {
           const updated = payload.new as Room
           setRoom(updated)
-          if (updated.status === 'category_vote') navigate(`/category-vote/${updated.code}`)
-          if (updated.status === 'profile_draft') navigate(`/profile-draft/${updated.code}`)
+          if (updated.status !== 'lobby') navigate(`/play/${updated.code}`, { replace: true })
         },
       )
       .subscribe()

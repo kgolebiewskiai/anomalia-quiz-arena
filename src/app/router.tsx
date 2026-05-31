@@ -4,12 +4,8 @@ import { DevCardsPage } from '../features/dev/DevCardsPage'
 import { CreateRoomPage } from '../features/lobby/CreateRoomPage'
 import { JoinRoomPage } from '../features/lobby/JoinRoomPage'
 import { LobbyPage } from '../features/lobby/LobbyPage'
-import { CategoryVotePage } from '../features/categoryDraft/CategoryVotePage'
-import { ProfileDraftPage } from '../features/profileDraft/ProfileDraftPage'
-import { QuestionPage } from '../features/question/QuestionPage'
-import { ModificationDraftPage } from '../features/modificationDraft/ModificationDraftPage'
+import { GamePage } from '../features/game/GamePage'
 import { ScoreboardPage } from '../features/scoreboard/ScoreboardPage'
-import { AnomalyRevealPage } from '../features/anomalyReveal/AnomalyRevealPage'
 import { MatchmakingPage } from '../features/matchmaking/MatchmakingPage'
 
 export const router = createBrowserRouter([
@@ -30,28 +26,12 @@ export const router = createBrowserRouter([
     element: <LobbyPage />,
   },
   {
-    path: '/category-vote/:code',
-    element: <CategoryVotePage />,
-  },
-  {
-    path: '/profile-draft/:code',
-    element: <ProfileDraftPage />,
-  },
-  {
-    path: '/question/:code',
-    element: <QuestionPage />,
-  },
-  {
-    path: '/modification-draft/:code',
-    element: <ModificationDraftPage />,
+    path: '/play/:code',
+    element: <GamePage />,
   },
   {
     path: '/scoreboard/:code',
     element: <ScoreboardPage />,
-  },
-  {
-    path: '/anomaly-reveal/:code',
-    element: <AnomalyRevealPage />,
   },
   {
     path: '/matchmaking',
